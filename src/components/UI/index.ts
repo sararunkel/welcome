@@ -6,3 +6,7 @@ export { AboutModal } from './AboutModal';
 export { AmbientBackground } from './AmbientBackground';
 export { PhotoLightbox } from './PhotoLightbox';
 export { Gallery } from './Gallery';
+export { Navigation } from './Navigation';
+export { HeroOverlay } from './HeroOverlay';
+export { ProjectCard } from './ProjectCard';
+export { ProjectModal } from './ProjectModal';

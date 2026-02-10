@@ -1,25 +1,29 @@
 :root {
-  /* Coral-Teal-Gray theme */
-  --color-theme-1: #FF4858;
-  --color-theme-2: #226A80;
-  --color-theme-3: #00CCC0;
-  --color-theme-4: #72F2EB;
-  --color-theme-5: #747F7F;
+  /* New color palette from Figma design */
+  --color-coral: #FF412F;
+  --color-navy: #001876;
+  --color-sage: #B3BB83;
+  --color-cream: #FCFFED;
+  --color-gray: #DDC4AC;
+  --color-dark: #09002E;
 
-  /* Color palette */
-  --color-primary: var(--color-theme-3);
-  --color-secondary: var(--color-theme-2);
-  --color-accent: var(--color-theme-1);
+  /* Semantic colors */
+  --color-primary: var(--color-coral);
+  --color-secondary: var(--color-navy);
+  --color-accent: var(--color-sage);
+  --color-background: var(--color-cream);
+
+  /* Category colors (keeping for existing project data) */
   --color-professional: rgb(19, 19, 131);
   --color-academic: rgb(239, 156, 0);
   --color-personal: rgb(124, 188, 124);
 
   /* Light theme */
-  --bg-primary: #FAFAFA;
+  --bg-primary: var(--color-cream);
   --bg-secondary: #FFFFFF;
   --bg-tertiary: #F0F0F0;
-  --text-primary: var(--color-theme-2);
-  --text-secondary: var(--color-theme-5);
+  --text-primary: #2C2C2C;
+  --text-secondary: #666666;
   --text-muted: #999999;
   --border-color: #E0E0E0;
 
@@ -30,10 +34,14 @@
   --space-lg: 24px;
   --space-xl: 32px;
   --space-2xl: 48px;
+  --space-3xl: 64px;
+  --space-4xl: 96px;
 
   /* Typography */
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-title: 'Figtree', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-body: 'Oxygen', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'Oxygen Mono', 'Courier New', monospace;
+  --font-sans: var(--font-body);
 
   /* Transitions */
   --transition-fast: 150ms ease;
@@ -85,55 +93,26 @@ html {
 
 body {
   font-family: var(--font-sans);
-  background: var(--bg-primary);
+  background: var(--color-cream);
   color: var(--text-primary);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* App layout */
+/* App layout - New section-based design */
 .app {
-  display: flex;
-  flex-direction: column;
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background: var(--color-cream);
+}
+
+.main-scroll {
+  position: relative;
+  scroll-snap-type: y mandatory;
+  overflow-y: auto;
   height: 100vh;
-  overflow: hidden;
-}
-
-.main {
-  flex: 1;
-  display: grid;
-  grid-template-columns: 1fr 380px;
-  grid-template-rows: auto 1fr auto;
-  gap: 0;
-  overflow: hidden;
-  position: relative;
-}
-
-.map-wrapper {
-  grid-column: 1;
-  grid-row: 1 / -1;
-  position: relative;
-  z-index: var(--z-map);
-}
-
-.map-container {
-  position: absolute;
-  inset: 0;
-}
-
-.map-container--loading {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg-tertiary);
-}
-
-.map-loading {
-  color: var(--text-muted);
-  font-size: 0.9rem;
 }
 
 /* Focus styles for accessibility */
@@ -198,13 +177,8 @@ a:focus-visible {
 
 /* Mobile responsive */
 @media (max-width: 768px) {
-  .main {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr auto;
-  }
-
-  .map-wrapper {
-    grid-row: 2;
+  .main-scroll {
+    scroll-snap-type: none;
   }
 }
 

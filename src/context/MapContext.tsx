@@ -4,11 +4,18 @@ import { photos, findRegionForCoordinates, getRandomPhotoForRegion } from '../da
 import { Project, LayerVisibility, FilterState, ViewState, Photo } from '../types';
 import { INITIAL_VIEW_STATE, TRANSITION_DURATION } from '../constants';
 
+type Section = 'home' | 'work' | 'creative' | 'about';
+
 interface MapContextValue {
   // View state
   viewState: ViewState;
   setViewState: (state: ViewState) => void;
   flyTo: (longitude: number, latitude: number, zoom?: number) => void;
+
+  // Section navigation
+  currentSection: Section;
+  setCurrentSection: (section: Section) => void;
+  mapInteractive: boolean;
 
   // Projects
   filteredProjects: Project[];
@@ -52,6 +59,12 @@ const MapContext = createContext<MapContextValue | null>(null);
 export function MapProvider({ children }: { children: ReactNode }) {
   // View state
   const [viewState, setViewState] = useState<ViewState>(INITIAL_VIEW_STATE);
+
+  // Section navigation
+  const [currentSection, setCurrentSection] = useState<Section>('home');
+
+  // Map is only interactive on home section
+  const mapInteractive = useMemo(() => currentSection === 'home', [currentSection]);
 
   // Selection
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
@@ -198,6 +211,9 @@ export function MapProvider({ children }: { children: ReactNode }) {
     viewState,
     setViewState,
     flyTo,
+    currentSection,
+    setCurrentSection,
+    mapInteractive,
     filteredProjects,
     selectedProject,
     selectProject,

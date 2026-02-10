@@ -1,0 +1,303 @@
+.world-map-container {
+  width: 100%;
+  height: 100%;
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-cream);
+  padding: var(--space-2xl);
+  overflow: visible;
+}
+
+.world-map-svg-wrapper {
+  width: 90%;
+  max-width: 1200px;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.world-map-svg-wrapper.loaded {
+  opacity: 1;
+}
+
+.world-map-svg-wrapper svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  /* allow foreignObject/popup to extend beyond SVG viewport without being clipped */
+  overflow: visible;
+}
+
+.world-map-svg-wrapper .map-dot {
+  /* keep dots performant but allow subtle visual changes */
+  transition: transform 150ms ease, filter 150ms ease, opacity 150ms ease;
+  will-change: transform, filter, opacity;
+  /* ensure transforms use the SVG fill-box and center origin for smooth motion */
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.world-map-svg-wrapper .map-dot--interactive {
+  cursor: pointer;
+  /* make interactive dots stand out: subtle stroke and slightly higher opacity */
+  stroke: var(--color-navy);
+  stroke-width: 1.25px;
+  opacity: 0.98;
+  /* enable GPU-friendly transforms scoped to the dot itself */
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 180ms ease, filter 180ms ease, stroke-width 180ms ease;
+  will-change: transform, filter;
+}
+
+/* Ensure interactive dots do not run legacy/compiled animations that apply scaling
+   (some built CSS includes a `pulse` animation that scales dots). Disable any
+   animations so our translate-only hover takes effect. */
+.world-map-svg-wrapper .map-dot,
+.world-map-svg-wrapper .map-dot--interactive {
+  animation: none !important;
+}
+
+/* Extra safety: disable any animations coming from compiled/dist CSS or
+   global rules that might target SVG children. This targets all SVG paths
+   inside the wrapper so none of the dots run keyframe-based scale effects. */
+.world-map-svg-wrapper svg path,
+.world-map-svg-wrapper svg circle,
+.world-map-svg-wrapper svg g,
+.world-map-svg-wrapper svg * {
+  animation: none !important;
+}
+
+/* Subtle hover effect for all dots: small upward shift + slight scale.
+   Interactive dots also keep the pointer cursor and are clickable. */
+.world-map-svg-wrapper .map-dot:hover {
+  /* force translate-only so other rules don't introduce scale */
+  transform: translateY(-2px) !important;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.22));
+  stroke: var(--color-coral);
+  stroke-width: 2px;
+  -webkit-transform: translateY(-2px) !important;
+  -moz-transform: translateY(-2px) !important;
+  -ms-transform: translateY(-2px) !important;
+  -o-transform: translateY(-2px) !important;
+  -webkit-filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.22));
+}
+
+/* Programmatic proximity hover: the hover-prox class is now used for reference
+   but all visual effects (transform, filter, stroke) are applied via inline styles
+   with distance-based calculations for smooth gradual scaling */
+
+/* Sun Valley dot - keep it visible */
+.world-map-svg-wrapper .sun-valley-dot {
+  cursor: default;
+}
+
+/* pulse keyframes removed to disable extra animations */
+
+/* fadeIn keyframes removed to eliminate non-pin animations */
+
+/* Location Marker for Sun Valley, Idaho */
+.location-marker {
+  position: absolute;
+  /* left and top set via inline styles based on SVG dot position */
+  transform: translate(-50%, -50%);
+  color: var(--color-coral);
+  cursor: pointer;
+  z-index: 15;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  transition: none;
+  pointer-events: auto;
+}
+
+.location-marker:hover {
+  color: var(--color-navy);
+  /* no transform or animation on hover */
+  filter: none;
+}
+
+/* SVG-embedded location marker wrapper */
+.location-marker-wrapper {
+  cursor: pointer;
+  /* Keep the group's transform static: we'll animate the visual pin only. */
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  will-change: transform;
+}
+
+/* Do not animate the whole group (which contains the popup). Instead animate
+   only the pin shape so the popup (foreignObject) doesn't change the group's
+   bounding box and produce lateral motion. */
+.location-marker-wrapper:hover {
+  transform: none;
+}
+
+.location-marker-wrapper .svg-location-pin,
+.location-marker-wrapper .svg-location-dot {
+  fill: var(--color-primary);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.483));
+  transition: transform 200ms ease, filter 200ms ease;
+  transform-box: fill-box;
+  /*makesureindividualpinscaling/transformusesbottom-centerasanchor*/transform-origin: 50% 100%;
+  -webkit-filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.527));
+}
+
+/* Pin wrap: animate subtly on hover but only the visual pin so the popup stays put. */
+.location-marker-wrapper .pin-wrap {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transition: transform 200ms ease;
+  transform: none;
+}
+
+.location-marker-wrapper:hover .pin-wrap {
+  /* force translate-only on the pin wrap to avoid scaling */
+  transform: translateY(-3px) !important;
+  -webkit-transform: translateY(-3px) !important;
+  -moz-transform: translateY(-3px) !important;
+  -ms-transform: translateY(-3px) !important;
+  -o-transform: translateY(-3px) !important;
+}
+
+/* Hide the intro box when data-open is not true on the wrapper group */
+.location-marker-wrapper:not([data-open="true"]) .intro-text-box {
+  display: none;
+}
+
+/* Styling for intro box when rendered inside foreignObject */
+.svg-foreign.intro-text-box,
+.location-marker-wrapper .intro-text-box {
+  position: static;
+  transform: none;
+  min-width: 260px;
+  padding: var(--space-lg) var(--space-xl);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  pointer-events: auto;
+  background: var(--color-cream);
+  border: 2px solid var(--color-coral);
+  border-radius: 12px;
+}
+
+.location-marker-wrapper foreignObject {
+  pointer-events: auto;
+  /* make sure the foreignObject doesn't clip its content */
+  overflow: visible;
+}
+
+/* Ensure the foreignObject content doesn't animate or reposition on hover */
+.location-marker-wrapper .intro-text-box,
+.svg-foreign.intro-text-box {
+  transition: none !important;
+}
+
+/* hide the old CSS connector when popup is rendered inside foreignObject */
+.svg-foreign.intro-text-box::before {
+  display: none;
+}
+
+/* connector removed — no visual connector between popup and pin */
+
+.location-marker svg {
+  display: block;
+}
+
+/* ---- Testing helper: opt-in disable of hover effects via `.no-hover` on a parent ---- */
+.no-hover .location-marker:hover,
+.no-hover .location-marker-wrapper:hover {
+  /* prevent any hover-only visual changes for the marker wrapper during testing */
+  transform: none !important;
+  -webkit-transform: none !important;
+  -moz-transform: none !important;
+  -ms-transform: none !important;
+  -o-transform: none !important;
+  filter: none !important;
+  transition: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+
+/* Intro Text Box */
+.intro-text-box {
+  position: absolute;
+  /*leftandtopsetviainlinestylesbasedonmarkerposition*/
+  background: var(--color-cream);
+  border: 2px solid var(--color-coral);
+  border-radius: 12px;
+  padding: var(--space-lg) var(--space-xl);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  z-index: 20;
+  animation: none;
+  min-width: 300px;
+  pointer-events: auto;
+  -webkit-border-radius: 12px;
+  -moz-border-radius: 12px;
+  -ms-border-radius: 12px;
+  -o-border-radius: 12px;
+}
+
+/* Connecting line from text box to marker */
+.intro-text-box::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 2px;
+  height: 80px;
+  background: var(--color-coral);
+  transform: translate(-30px, 100%);
+  transform-origin: top;
+}
+
+.intro-text-box h1 {
+  font-family: var(--font-title);
+  font-size: clamp(1.5rem, 3vw, 2.5rem);
+  font-weight: 400;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-xs) 0;
+  line-height: 1.2;
+}
+
+.intro-text-box h2 {
+  font-family: var(--font-title);
+  font-size: clamp(1.2rem, 2.5vw, 2rem);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.2;
+}
+
+@media (max-width: 1024px) {
+  .intro-text-box {
+    min-width: 250px;
+  }
+}
+
+@media (max-width: 768px) {
+  .world-map-svg-wrapper {
+    width: 100%;
+  }
+
+  .world-map-container {
+    padding: var(--space-lg);
+  }
+
+  .intro-text-box {
+    min-width: 200px;
+    padding: var(--space-md) var(--space-lg);
+  }
+
+  .intro-text-box h1 {
+    font-size: 1.25rem;
+  }
+
+  .intro-text-box h2 {
+    font-size: 1rem;
+  }
+
+  .location-marker svg {
+    width: 20px;
+    height: 20px;
+  }
+}

@@ -19,7 +19,8 @@ export function MapContainer() {
     selectProject,
     filteredPhotos,
     selectedPhoto,
-    selectPhoto
+    selectPhoto,
+    mapInteractive
   } = useMap();
 
   // Delay rendering to avoid WebGL initialization issues
@@ -64,7 +65,7 @@ export function MapContainer() {
         new ScatterplotLayer<Photo>({
           id: 'photos-ring',
           data: filteredPhotos,
-          pickable: true,
+          pickable: mapInteractive,
           opacity: 1,
           stroked: true,
           filled: false,
@@ -78,7 +79,7 @@ export function MapContainer() {
             ? [255, 255, 255, 255] as [number, number, number, number]
             : [139, 92, 246, 255] as [number, number, number, number],
           getLineWidth: (d) => d.id === selectedPhoto ? 4 : 3,
-          onClick: handlePhotoClick,
+          onClick: mapInteractive ? handlePhotoClick : undefined,
           updateTriggers: {
             getLineColor: [selectedPhoto],
             getLineWidth: [selectedPhoto]
@@ -91,7 +92,7 @@ export function MapContainer() {
         new ScatterplotLayer<Photo>({
           id: 'photos-center',
           data: filteredPhotos,
-          pickable: true,
+          pickable: mapInteractive,
           opacity: 1,
           stroked: false,
           filled: true,
@@ -103,7 +104,7 @@ export function MapContainer() {
           getFillColor: (d) => d.id === selectedPhoto
             ? [139, 92, 246, 255] as [number, number, number, number]
             : [255, 255, 255, 255] as [number, number, number, number],
-          onClick: handlePhotoClick,
+          onClick: mapInteractive ? handlePhotoClick : undefined,
           updateTriggers: {
             getFillColor: [selectedPhoto]
           }
@@ -116,7 +117,7 @@ export function MapContainer() {
       new ScatterplotLayer<Project>({
         id: 'projects',
         data: filteredProjects,
-        pickable: true,
+        pickable: mapInteractive,
         opacity: 0.9,
         stroked: true,
         filled: true,
@@ -144,7 +145,7 @@ export function MapContainer() {
           return [255, 255, 255, 200] as [number, number, number, number];
         },
         getLineWidth: (d) => d.id === selectedProject ? 4 : 2,
-        onClick: handleProjectClick,
+        onClick: mapInteractive ? handleProjectClick : undefined,
         updateTriggers: {
           getFillColor: [selectedProject],
           getLineColor: [selectedProject],
@@ -180,10 +181,10 @@ export function MapContainer() {
     }
 
     return layerList;
-  }, [isReady, filteredProjects, filteredPhotos, selectedProject, selectedPhoto, handleProjectClick, handlePhotoClick]);
+  }, [isReady, filteredProjects, filteredPhotos, selectedProject, selectedPhoto, handleProjectClick, handlePhotoClick, mapInteractive]);
 
   const getTooltip = useCallback((info: PickingInfo) => {
-    if (!info.object) return null;
+    if (!mapInteractive || !info.object) return null;
 
     if (info.layer?.id === 'photos-ring' || info.layer?.id === 'photos-center') {
       const photo = info.object as Photo;
@@ -218,7 +219,7 @@ export function MapContainer() {
         border: 'none'
       }
     };
-  }, []);
+  }, [mapInteractive]);
 
   // Handle WebGL errors gracefully
   const onError = useCallback((error: Error) => {
@@ -241,11 +242,11 @@ export function MapContainer() {
           transitionInterpolator: new FlyToInterpolator(),
           transitionDuration: viewState.transitionDuration || 0
         }}
-        onViewStateChange={handleViewStateChange}
+        onViewStateChange={mapInteractive ? handleViewStateChange : undefined}
         onError={onError}
-        controller={true}
+        controller={mapInteractive}
         layers={layers}
-        getTooltip={getTooltip}
+        getTooltip={mapInteractive ? getTooltip : undefined}
       >
         <Map
           mapStyle={MAP_STYLES[theme]}
